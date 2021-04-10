@@ -1,0 +1,109 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class Player : MonoBehaviour
+{
+    //移动速度
+    public float _speed;
+    //动画
+    public Animator _anim;
+    public float _jumps;
+    public Rigidbody2D rw;
+    public Collider2D coll;
+  
+    public LayerMask groud;
+    bool isLanding = true;
+    public LayerMask trap;
+    private float timer = 0;
+    void Start()
+    {
+       // 获取动画组件
+        _anim = GetComponent<Animator>();
+    }
+    private void OnAnimatorMove()
+    {
+        //移动，获取方位组件，修改位置      水平/获取键盘输入                                              //世界坐标系
+        transform.Translate(new Vector2(Input.GetAxisRaw("Horizontal"), 0) * _speed * Time.deltaTime, Space.World);
+        //触发动画        动画名        移动方向
+        _anim.SetInteger("run", (int)Input.GetAxisRaw("Horizontal"));
+        //人物移动朝向
+        //GetAxisRaw获取键盘输入的值并转换为1或-1
+        if (Input.GetAxisRaw("Horizontal") > 0)
+        {
+            //获取旋转组件        修改3维旋转      z   x  y 旋转度数                
+            transform.rotation = Quaternion.Euler(0, 0, 0);
+        }
+        if (Input.GetAxisRaw("Horizontal") < 0)
+        {
+            transform.rotation = Quaternion.Euler(0, 180, 0);
+        }
+        //跳跃
+        if (isLanding)
+        {
+            if (Input.GetButtonDown("Jump"))
+            {
+                isLanding = false;
+                rw.velocity = new Vector2(rw.velocity.x, _jumps);
+                _anim.SetBool("jump", true);
+            }
+        }
+    }
+    
+    //攻击
+    void attack()
+    {
+            //修改名为      的动画不启动
+        _anim.SetBool("attack", false);
+                    //获取键盘输入的J
+        if (Input.GetKeyDown(KeyCode.J))
+        {   //启动动画组件
+            _anim.SetBool("attack", true);
+            
+         
+        }
+    }  
+    void SwitchAnim()
+    {
+        _anim.SetBool("idle", false);
+        if (_anim.GetBool("jump"))
+        {
+            if (rw.velocity.y < 0)
+            {
+                _anim.SetBool("jump", false);
+                _anim.SetBool("fall", true);
+            }
+        }
+        else if (rw.velocity.y < 0)
+        {
+            isLanding = false;
+            _anim.SetBool("fall", true);
+        }
+        else if (coll.IsTouchingLayers(groud))
+        {
+            isLanding = true;
+            _anim.SetBool("fall", false);
+            _anim.SetBool("idle", true);
+        }
+        else if (coll.IsTouchingLayers(trap))
+        {
+            GetComponent<SpriteRenderer>().color = Color.red;
+            _anim.SetBool("fall", false);
+            _anim.SetBool("idle", true);
+        }
+    }
+    void Update()
+    {
+        attack();
+        SwitchAnim();
+        if(GetComponent<SpriteRenderer>().color == Color.red)
+        {
+            timer += Time.deltaTime;
+            if (timer > 0.3f)
+            {
+                GetComponent<SpriteRenderer>().color = Color.white;
+                timer = 0;
+            }
+        }
+    }
+}
