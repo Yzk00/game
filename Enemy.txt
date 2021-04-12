@@ -1,0 +1,74 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class EnemyCtr : MonoBehaviour
+{
+    public float Speed;
+    public GameObject Player;
+    public Animator _anim;
+    public float Health;
+    bool isDie = false;
+    float timer = 0;
+    // Start is called before the first frame update
+    void Start()
+    {
+        Player = GameObject.FindGameObjectWithTag("Player");
+        _anim = GetComponent<Animator>();
+    }
+    public void GetHurt(float attack)
+    {
+        if (!isDie)
+        {
+            Health -= attack;
+            GetComponent<SpriteRenderer>().color = Color.red;
+            if (Health <= 0)
+            {
+                isDie = true;
+                _anim.SetTrigger("die");
+            }
+        }
+    }
+    private void Move()
+    {
+        //追踪
+        _anim.SetBool("run", false);
+        _anim.SetBool("attack", false);
+        if(Vector3.Distance(transform.position,Player.transform.position)<=4&& Vector3.Distance(transform.position, Player.transform.position) >2)
+        {
+            _anim.SetBool("run", true);
+            transform.position += (Player.transform.position - transform.position).normalized * Speed * Time.deltaTime;
+            if (Player.transform.position.x < transform.position.x)
+            {
+                transform.rotation = Quaternion.Euler(0, 0, 0);
+
+            }
+            if (Player.transform.position.x > transform.position.x)
+            {
+                transform.rotation = Quaternion.Euler(0, 180, 0);
+
+            }
+        }
+        //攻击
+        if (Vector3.Distance(transform.position, Player.transform.position) <= 2)
+        {
+            _anim.SetBool("attack", true);
+            _anim.SetBool("run", false);
+        }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        Move();
+        if (GetComponent<SpriteRenderer>().color == Color.red)
+        {
+            timer += Time.deltaTime;
+            if (timer > 0.3f)
+            {
+                GetComponent<SpriteRenderer>().color = Color.white;
+                timer = 0;
+            }
+        }
+    }
+}
