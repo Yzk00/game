@@ -1,7 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class Player : MonoBehaviour
 {
     //移动速度
@@ -16,6 +16,14 @@ public class Player : MonoBehaviour
     bool isLanding = true;
     public LayerMask trap;
     private float timer = 0;
+    float timer1=0;
+    public BoxCollider2D attackjiance;
+
+    public float MaxHealth;
+     float Health=100;
+    public Slider HealthSli;
+    bool isDie = false;
+
     void Start()
     {
        // 获取动画组件
@@ -46,6 +54,7 @@ public class Player : MonoBehaviour
                 isLanding = false;
                 rw.velocity = new Vector2(rw.velocity.x, _jumps);
                 _anim.SetBool("jump", true);
+                
             }
         }
     }
@@ -59,9 +68,9 @@ public class Player : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.J))
         {   //启动动画组件
             _anim.SetBool("attack", true);
-            
-         
+            attackjiance.enabled = true;
         }
+        
     }  
     void SwitchAnim()
     {
@@ -79,23 +88,40 @@ public class Player : MonoBehaviour
             isLanding = false;
             _anim.SetBool("fall", true);
         }
+        //触碰地板
         else if (coll.IsTouchingLayers(groud))
         {
             isLanding = true;
             _anim.SetBool("fall", false);
             _anim.SetBool("idle", true);
         }
+        //触碰陷阱
         else if (coll.IsTouchingLayers(trap))
-        {
+            {
             GetComponent<SpriteRenderer>().color = Color.red;
             _anim.SetBool("fall", false);
             _anim.SetBool("idle", true);
+        }
+    }
+    //受伤
+    public void GetHurt(float attack)
+    {
+        if (!isDie)
+        {
+            Health -= attack;
+         
+            if (Health <= 0)
+            {
+                isDie = true;
+                _anim.SetTrigger("die");
+            }
         }
     }
     void Update()
     {
         attack();
         SwitchAnim();
+        //受击与恢复正常
         if(GetComponent<SpriteRenderer>().color == Color.red)
         {
             timer += Time.deltaTime;
@@ -104,6 +130,22 @@ public class Player : MonoBehaviour
                 GetComponent<SpriteRenderer>().color = Color.white;
                 timer = 0;
             }
+        }
+        //攻击判定
+        if (attackjiance.enabled == true)
+        {
+            timer1 += Time.deltaTime;
+            if (timer1 > 0.2f)
+            {
+                timer1 = 0;
+                attackjiance.enabled = false;
+            }
+
+        }
+HealthSli.value = Health /MaxHealth;
+        if (isDie)
+        {
+            return;
         }
     }
 }
