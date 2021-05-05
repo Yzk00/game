@@ -1,0 +1,42 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+
+public class NpcTr : MonoBehaviour
+{
+    public GameObject Eshow;
+    public GameObject TalkBox;
+    public Text talkText;
+    public string text;
+    bool chupen;
+   
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.tag == "Player")
+        {
+            Eshow.SetActive(true);
+            chupen = true;
+        }
+    }
+   
+    private void OnTriggerExit2D(Collider2D collision)
+    {
+        if (collision.tag == "Player")
+        {
+            Eshow.SetActive(false);
+            chupen = false;
+            TalkBox.SetActive(false);
+        }
+    }
+
+    // Update is called once per frame
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.E) && chupen)
+        {
+            TalkBox.SetActive(true);
+            talkText.text = text;
+        }
+    }
+}
